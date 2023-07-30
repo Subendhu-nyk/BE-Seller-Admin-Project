@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+      
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container-fluid border border-bottom bg-secondary-subtle">
+            <div class="container">          
+     <div class="row text-center">
+        <h1>Seller's Admin Page</h1>
+            </div>
+        </div>
+    </div>
+    </header>    
+    <section>
+        <div class="container-fluid">
+            <div class="container">
+
+    <form action="" method="post" onsubmit="OnSubmit(event)">
+        <div class="row border border-black py-3">
+           
+            <div class="col-lg-4">
+                <label for="price">Selling Price</label>
+                <input type="text" name="price" id="price" placeholder="Enter Selling Price">
+            </div>
+            <div class="col-lg-4">
+                <label for="product">Product Name</label>
+                <input type="text" name="product" id="product" placeholder="Enter Product Name">
+            </div>
+            <div class="col-lg-4">
+                <button type="submit" class="btn btn-outline-primary">Add Product</button>
+            </div>            
+        </div>
+    </form>
+        <div class="row py-3">
+            <div class="col-12">
+                <h2>Products</h2>
+            </div>
+            <div class="col-12">
+                <ul id="itemlist">
+                    
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <h2>Total value worth of products</h2>
+            </div>
+            <div class="col-12">
+                <ul id="total">
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+    </section>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+    <script>
+
+       async function OnSubmit(event){
+
+            event.preventDefault();
+            let price=document.getElementById('price').value
+            let product=document.getElementById('product').value
+
+            let obj={
+                price,
+                product
+            }
+            try{
+            const response= await axios.post('http://localhost:3000/user/add-product',obj)
+            console.log(response.data)
+            console.log(response.data.newsellerDetail)
+            showdetails()
+            }
+            catch(error){
+                console.log(error)
+            }
+        }
+
+        async function showdetails(){
+            try{
+                const response= await axios.get('http://localhost:3000/user/get-product')
+                const data=response.data.allproducts
+                console.log(data)
+                const parentElement=document.getElementById('itemlist')              
+                parentElement.innerHTML='';  
+                totalValue = 0;           
+                data.forEach(object => {                    
+                    const childElement=document.createElement('li')
+                    childElement.style.marginBottom='10px'
+                    const productPrice = parseFloat(object.price);
+                    totalValue=totalValue + productPrice;
+                    childElement.textContent=`Product Price :-  ${object.price} Product Name :-  ${object.product}`
+                    parentElement.appendChild(childElement)               
+                  
+                   
+                    const deletebutton=document.createElement('input')
+                        deletebutton.type="submit"
+                        deletebutton.style.marginLeft="10px"
+                        deletebutton.value="Delete"
+                        childElement.appendChild(deletebutton)
+                        deletebutton.onclick= async ()=>{
+                            try{
+                                const response=await axios.delete(`http://localhost:3000/user/delete-product/${object.id}`)
+                                parentElement.removeChild(childElement)                       
+                                totalValue= totalValue - productPrice
+                                updateTotal()
+                            }
+                            catch(err){
+                                console.log(err)
+                            }
+                        }                  
+
+
+                        });             
+                        updateTotal();
+                    }
+                    catch(error){
+                        console.log(error)
+                    }
+                } 
+                function updateTotal() {
+        const totalElement = document.getElementById('total');
+        totalElement.textContent = `Total price of products: ${totalValue}`;
+    }
+       
+               
+                showdetails()
+    </script>
+</body>
+</html>
